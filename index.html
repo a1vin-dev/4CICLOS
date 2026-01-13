@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4CICLOS VLVIN | Gestão de Alta Performance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #020617;
+            --surface: #0f172a;
+            --border: #1e293b;
+            --text: #f8fafc;
+            --muted: #64748b;
+            --accent: #22c55e; 
+            --danger: #f43f5e; 
+            --gold: #fbbf24;
+            --btn: #2563eb;    
+            --glass: rgba(15, 23, 42, 0.95);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: radial-gradient(circle at 50% 0%, #1e1b4b, #020617 80%);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .main-container { max-width: 950px; margin: 0 auto; }
+
+        header { text-align: center; margin-bottom: 40px; }
+        header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #fff, #60a5fa, #fff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        .controls {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 25px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        .input-group { display: flex; flex-direction: column; gap: 5px; }
+        label { font-size: 9px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+        input { background: #020617; border: 1px solid var(--border); border-radius: 8px; padding: 12px; color: white; font-size: 0.9rem; border: 1px solid var(--border); }
+        input:focus { border-color: var(--btn); outline: none; }
+
+        .btn-run {
+            grid-column: 1 / -1;
+            background: #fff;
+            color: #020617;
+            padding: 18px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+        .btn-run:hover { background: var(--btn); color: #fff; }
+
+        #resultado-consolidado {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 2px solid var(--gold);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .consolidado-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: center; }
+        .consolidado-box h4 { font-size: 10px; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; }
+        .consolidado-box .val { font-size: 1.8rem; font-weight: 800; color: var(--gold); }
+        .consolidado-box .real-val { font-size: 2rem; font-weight: 800; color: var(--accent); }
+
+        .day-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .day-header { padding: 20px; background: rgba(255,255,255,0.02); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+        .day-header h3 { font-size: 1.1rem; color: var(--btn); font-weight: 800; }
+        
+        .stop-indicator { background: rgba(244, 63, 94, 0.1); padding: 8px 15px; border-radius: 10px; border: 1px solid rgba(244, 63, 94, 0.2); text-align: right; }
+        .stop-indicator small { display: block; font-size: 8px; color: var(--danger); font-weight: 800; text-transform: uppercase; }
+        .stop-indicator span { font-size: 1rem; font-weight: 700; color: var(--danger); }
+
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 12px 20px; color: var(--muted); font-size: 9px; text-transform: uppercase; }
+        td { padding: 15px 20px; border-top: 1px solid var(--border); }
+
+        .val-pos { color: var(--accent); font-weight: 700; }
+        
+        .day-footer { padding: 15px 20px; background: rgba(0,0,0,0.3); display: flex; justify-content: space-between; border-top: 1px solid var(--border); }
+        .footer-group { display: flex; flex-direction: column; }
+        .footer-group .label { font-size: 9px; color: var(--muted); text-transform: uppercase; font-weight: 700; }
+        .footer-group .value { font-size: 1.1rem; font-weight: 800; }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <header>
+        <h1>4CICLOS VLVIN</h1>
+        <p>Protocolo Trader Profissional</p>
+    </header>
+
+    <div class="controls">
+        <div class="input-group"><label>Banca Inicial</label><input id="banca" type="number" value="500"></div>
+        <div class="input-group"><label>Payout %</label><input id="payout" type="number" value="75"></div>
+        <div class="input-group"><label>Risco (%)</label><input id="risco" type="number" step="0.01" value="5.56"></div>
+        <div class="input-group"><label>Ciclos (Dias)</label><input id="ciclos" type="number" value="7"></div>
+        <div class="input-group"><label>Winrate (%)</label><input id="winrate" type="number" value="65"></div>
+        <div class="input-group"><label>Stop Loss (%)</label><input id="stopPerc" type="number" value="16.67"></div>
+        <button class="btn-run" onclick="gerar()">Gerar Planejamento</button>
+    </div>
+
+    <div id="resultado-consolidado">
+        <div class="consolidado-grid">
+            <div class="consolidado-box" style="border-right: 1px solid var(--border);">
+                <h4 id="labelBruto">T. BRU (Fim dos Ciclos)</h4>
+                <div id="brutoFinal" class="val">R$ 0,00</div>
+            </div>
+            <div class="consolidado-box">
+                <h4 id="labelReal">Lucro Real Esperado</h4>
+                <div id="realFinal" class="real-val">R$ 0,00</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="container"></div>
+</div>
+
+<script>
+// Formatação BRL sem dízimas estranhas
+const fmt = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+// Função para arredondar porcentagens visualmente
+const fmtPct = (v) => parseFloat(v.toFixed(2));
+
+function gerar(){
+    const container = document.getElementById('container');
+    const painel = document.getElementById('resultado-consolidado');
+    container.innerHTML = '';
+    
+    let banca = parseFloat(document.getElementById('banca').value);
+    const payoutRaw = parseFloat(document.getElementById('payout').value);
+    const payout = payoutRaw / 100;
+    const risco = parseFloat(document.getElementById('risco').value) / 100;
+    const ciclos = parseInt(document.getElementById('ciclos').value);
+    const winrateRaw = parseFloat(document.getElementById('winrate').value);
+    const stopPercRaw = parseFloat(document.getElementById('stopPerc').value);
+
+    for(let i=1; i<=ciclos; i++){
+        const ent1 = banca * risco;
+        const luc1 = ent1 * payout;
+        const fin1 = ent1 + luc1;
+        
+        const ent2 = fin1; 
+        const luc2 = ent2 * payout;
+        const fin2 = ent2 + luc2;
+        
+        const liqFase = luc1 + luc2;
+        const bancaFim = banca + liqFase;
+        
+        const stopValor = banca - (banca * (stopPercRaw / 100));
+
+        const card = document.createElement('div');
+        card.className = 'day-card';
+        card.innerHTML = `
+            <div class="day-header">
+                <h3>FASE 0${i}</h3>
+                <div class="stop-indicator"><small>STOP LOSS (${fmtPct(stopPercRaw)}%)</small><span>${fmt(stopValor)}</span></div>
+            </div>
+            <table>
+                <thead><tr><th>№</th><th>ENTRADAS</th><th>%</th><th>LUCRO</th><th>FINAL</th></tr></thead>
+                <tbody>
+                    <tr><td>1</td><td>${fmt(ent1)}</td><td>${fmtPct(payoutRaw)}%</td><td class="val-pos">${fmt(luc1)}</td><td>${fmt(fin1)}</td></tr>
+                    <tr><td>2</td><td>${fmt(ent2)}</td><td>${fmtPct(payoutRaw)}%</td><td class="val-pos">${fmt(luc2)}</td><td>${fmt(fin2)}</td></tr>
+                </tbody>
+            </table>
+            <div class="day-footer">
+                <div class="footer-group"><span class="label">BANCA INICIAL</span><span class="value">${fmt(banca)}</span></div>
+                <div class="footer-group" style="text-align:right"><span class="label">T. BRU (PROJETADO)</span><span class="value" style="color:var(--gold)">${fmt(bancaFim)}</span></div>
+            </div>
+        `;
+        container.appendChild(card);
+        banca = bancaFim;
+    }
+
+    painel.style.display = 'block';
+    document.getElementById('labelBruto').innerText = `T. BRU (Fim de ${ciclos} Ciclos)`;
+    document.getElementById('labelReal').innerText = `Lucro Real Esperado (${fmtPct(winrateRaw)}%)`;
+    document.getElementById('brutoFinal').innerText = fmt(banca);
+    document.getElementById('realFinal').innerText = fmt(banca * (winrateRaw / 100));
+    
+    window.scrollTo({ top: painel.offsetTop - 30, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
